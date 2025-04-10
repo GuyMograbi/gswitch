@@ -1,8 +1,12 @@
 const { v4: uuidv4 } = require('uuid');
 
 const inquirer = require('inquirer');
+const inquirerAutocomplete = require('inquirer-autocomplete-prompt');
 const simpleGit = require('simple-git');
 const gitAdapter = require('../git-adapter');
+
+// Register the autocomplete prompt
+inquirer.registerPrompt('autocomplete', inquirerAutocomplete);
 
 const { SwitchContext } = require('../store');
 
@@ -72,12 +76,20 @@ async function switchToExistingBranch() {
     return;
   }
 
+  // Function to filter branches based on input
+  const searchBranches = (answers, input = '') => new Promise((resolve) => {
+    const filteredBranches = branches.filter((branch) =>
+      !input || branch.name.toLowerCase().includes(input.toLowerCase()));
+    resolve(filteredBranches);
+  });
+
   const { selectedBranch } = await inquirer.prompt([
     {
-      type: 'list',
+      type: 'autocomplete',
       name: 'selectedBranch',
-      message: 'Select a branch to switch to:',
-      choices: branches,
+      message: 'Select a branch to switch to (type to search):',
+      source: searchBranches,
+      pageSize: 10,
     },
   ]);
 
@@ -145,7 +157,7 @@ async function handleSwitchCommand() {
       const lastCommitMessage = await gitAdapter.getLastCommitCommentOneLine();
 
       // Stash the selected files with the UUID as reference
-      await git.stash(['push', filesToStash, '-m', `gswitch-${contextId}`]);
+      await git.stash(['push', ...filesToStash, '-m', `gswitch-${contextId}`]);
       console.log('Stashed changes for the selected files.');
 
       SwitchContext.create({
