@@ -8,7 +8,17 @@ function getRepoName() {
   return git.revparse(['--show-toplevel']);
 }
 
+function getLastCommitHash() {
+  return git.revparse(['HEAD']);
+}
+
+function getLastCommitCommentOneLine() {
+  return git.log(['-1', '--pretty=%B']);
+}
+
 module.exports = {
   getCurrentBranch,
   getRepoName,
+  getLastCommitHash,
+  getLastCommitCommentOneLine,
 };

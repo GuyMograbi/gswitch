@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const inquirer = require('inquirer');
 const simpleGit = require('simple-git');
+const gitAdapter = require('../git-adapter');
 
 const { SwitchContext } = require('../store');
 
@@ -139,6 +140,11 @@ async function handleSwitchCommand() {
       // Get current branch
       const currentBranch = status.current;
 
+      // Get last commit hash
+      const lastCommitHash = await gitAdapter.getLastCommitHash();
+
+      const lastCommitMessage = await gitAdapter.getLastCommitCommentOneLine();
+
       // Stash the selected files with the UUID as reference
       await git.stash(['push', filesToStash, '-m', `gswitch-${contextId}`]);
       console.log('Stashed changes for the selected files.');
@@ -147,6 +153,8 @@ async function handleSwitchCommand() {
         timestamp,
         contextId,
         branch: currentBranch,
+        lastCommitHash,
+        lastCommitMessage,
         files: filesToStash,
       });
     }
