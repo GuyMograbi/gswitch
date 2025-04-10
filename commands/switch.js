@@ -140,7 +140,7 @@ async function handleSwitchCommand() {
       const currentBranch = status.current;
 
       // Stash the selected files with the UUID as reference
-      await git.stash(['save', `gswitch-${contextId}`]);
+      await git.stash(['push', filesToStash, '-m', `gswitch-${contextId}`]);
       console.log('Stashed changes for the selected files.');
 
       SwitchContext.create({
@@ -149,15 +149,6 @@ async function handleSwitchCommand() {
         branch: currentBranch,
         files: filesToStash,
       });
-
-      // Reset any other files that might have been staged but not selected for stashing
-      const filesToKeep = modifiedFiles.filter(
-        (file) => !filesToStash.includes(file),
-      );
-      if (filesToKeep.length > 0) {
-        await git.add(filesToKeep);
-        await git.reset(['HEAD']);
-      }
     }
 
     // Now handle branch switching
