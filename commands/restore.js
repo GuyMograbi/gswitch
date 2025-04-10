@@ -36,7 +36,8 @@ async function handleRestoreCommand() {
 
   await git.stash(['apply', matchingStash.hash]);
   console.log('Restored stashed changes to the current branch.');
-  SwitchContext.delete((item) => item.contextId === contextId);
+
+  SwitchContext.deleteOne((item) => item.contextId === contextId);
 }
 
 module.exports = {

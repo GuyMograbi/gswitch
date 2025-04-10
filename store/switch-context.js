@@ -12,10 +12,15 @@ class SwitchContext {
     getConnection().insert(propertyKey, item);
   }
 
-  static delete(filter) {
+  static deleteOne(filter) {
     const all = this.getAll();
-    const filtered = all.filter(filter);
-    getConnection().write(propertyKey, filtered);
+    const filtered = all.find(filter);
+    if (filtered === undefined) {
+      console.log('No items found to delete');
+      return;
+    }
+    const keep = all.filter((item) => item !== filtered);
+    getConnection().write(propertyKey, keep);
   }
 
   static findForBranch(branchName) {
