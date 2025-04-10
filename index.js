@@ -168,24 +168,31 @@ async function handleRestoreCommand() {
     const repoPath = await git.revparse(["--show-toplevel"]);
     const repoName = path.basename(repoPath);
 
-    // Get repository information
+    // Get current branch
+    const status = await git.status();
+    const currentBranch = status.current;
 
     // Check if we have stashes for this repository
     if (
       !config.stashes[repoName] ||
       Object.keys(config.stashes[repoName]).length === 0
     ) {
-      console.log("No stashed changes found for this repository.");
+      console.log("No saved contexts found for this repository.");
       return;
     }
 
-    // Look for stashes related to this branch in our config
+    // Look for contexts related to the current branch in our config
     const activeStashes = Object.entries(config.stashes[repoName])
-      .filter(([_, stashInfo]) => stashInfo.active)
+      .filter(
+        ([_, stashInfo]) =>
+          stashInfo.active && stashInfo.branch === currentBranch
+      )
       .sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp));
 
     if (activeStashes.length === 0) {
-      console.log("No active stashed changes found for this repository.");
+      console.log(
+        `No active contexts found for branch '${currentBranch}'. Nothing to restore.`
+      );
       return;
     }
 
@@ -306,6 +313,26 @@ async function main() {
         choices: modifiedFiles,
       },
     ]);
+
+    // Get repository info
+    const repoPath = await git.revparse(["--show-toplevel"]);
+    const repoName = path.basename(repoPath);
+    const currentBranch = status.current;
+
+    // Check if a context already exists for this branch
+    if (config.stashes[repoName]) {
+      const existingContext = Object.values(config.stashes[repoName]).find(
+        (contextInfo) =>
+          contextInfo.active && contextInfo.branch === currentBranch
+      );
+
+      if (existingContext) {
+        console.error(
+          `State already exists for branch '${currentBranch}'. Please restore it first.`
+        );
+        process.exit(1);
+      }
+    }
 
     // Stash the selected files
     if (filesToStash.length > 0) {
