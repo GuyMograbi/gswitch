@@ -6,6 +6,7 @@ const simpleGit = require("simple-git");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const { v4: uuidv4 } = require("uuid");
 
 const git = simpleGit();
 
@@ -19,10 +20,17 @@ if (!fs.existsSync(configDir)) {
 }
 
 // Load or initialize config
-let config = { previousBranches: {} };
+let config = {
+  previousBranches: {},
+  stashes: {},
+};
 if (fs.existsSync(configFile)) {
   try {
     config = JSON.parse(fs.readFileSync(configFile, "utf8"));
+    // Initialize stashes object if it doesn't exist
+    if (!config.stashes) {
+      config.stashes = {};
+    }
   } catch (error) {
     console.error("Error reading config file:", error.message);
   }
@@ -92,43 +100,51 @@ async function handleListCommand() {
       process.exit(1);
     }
 
-    // Check if we're in a git repository
+    // Get repository info
+    const repoPath = await git.revparse(["--show-toplevel"]);
+    const repoName = path.basename(repoPath);
 
-    // Get stash list
-    const stashList = await git.stashList();
-
-    // Find stashes that were created by gswitch
-    const gSwitchStashes = stashList.all.filter((stash) =>
-      stash.message.includes("gswitch: stashed changes")
-    );
-
-    if (gSwitchStashes.length === 0) {
+    // Check if we have stashes for this repository
+    if (
+      !config.stashes[repoName] ||
+      Object.keys(config.stashes[repoName]).length === 0
+    ) {
       console.log("No stashed changes found for this repository.");
       return;
     }
 
-    console.log("\nStashed changes:");
+    console.log("\nSaved contexts:");
     console.log("----------------");
 
-    // For each stash, show details
-    for (const stash of gSwitchStashes) {
-      console.log(`\nStash: ${stash.hash}`);
-      console.log(`Message: ${stash.message}`);
+    // Get all contexts for this repository from our config
+    const repoContexts = Object.entries(config.stashes[repoName])
+      .filter(([_, contextInfo]) => contextInfo.active)
+      .sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp));
 
-      // Get the files in this stash
+    if (repoContexts.length === 0) {
+      console.log("No active contexts found for this repository.");
+      return;
+    }
+
+    // For each context in our config, show details
+    for (const [contextId, contextInfo] of repoContexts) {
+      // Format the timestamp to be more readable
+      let formattedTime = "Unknown";
       try {
-        const stashShow = await git.stashShow([stash.hash]);
-        const files = stashShow
-          .split("\n")
-          .filter((line) => line.trim() !== "");
-
-        console.log("Files:");
-        files.forEach((file) => {
-          console.log(`  - ${file}`);
-        });
-      } catch (error) {
-        console.log("  Unable to show files in this stash.");
+        const date = new Date(contextInfo.timestamp);
+        formattedTime = date.toLocaleString();
+      } catch (e) {
+        formattedTime = contextInfo.timestamp;
       }
+
+      console.log(`\nContext ID: ${contextId.substring(0, 8)}...`);
+      console.log(`Created: ${formattedTime}`);
+      console.log(`Branch: ${contextInfo.branch}`);
+
+      console.log("Files:");
+      contextInfo.files.forEach((file) => {
+        console.log(`  - ${file}`);
+      });
     }
   } catch (error) {
     console.error("An error occurred:", error.message);
@@ -148,25 +164,60 @@ async function handleRestoreCommand() {
       process.exit(1);
     }
 
-    // Check if we're in a git repository
+    // Get repository info
+    const repoPath = await git.revparse(["--show-toplevel"]);
+    const repoName = path.basename(repoPath);
+
+    // Get repository information
+
+    // Check if we have stashes for this repository
+    if (
+      !config.stashes[repoName] ||
+      Object.keys(config.stashes[repoName]).length === 0
+    ) {
+      console.log("No stashed changes found for this repository.");
+      return;
+    }
+
+    // Look for stashes related to this branch in our config
+    const activeStashes = Object.entries(config.stashes[repoName])
+      .filter(([_, stashInfo]) => stashInfo.active)
+      .sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp));
+
+    if (activeStashes.length === 0) {
+      console.log("No active stashed changes found for this repository.");
+      return;
+    }
+
+    // Get the most recent stash
+    const [stashId] = activeStashes[0];
 
     // Look for stashes related to this branch
     const stashList = await git.stashList();
 
-    // Find stashes that were created by gswitch for this branch
-    const gSwitchStashes = stashList.all.filter((stash) =>
-      stash.message.includes("gswitch: stashed changes")
+    // Find the stash with our UUID
+    const matchingStash = stashList.all.find((stash) =>
+      stash.message.includes(`gswitch-${stashId}`)
     );
 
-    if (gSwitchStashes.length === 0) {
-      console.log("No stashed changes found for the current branch.");
+    if (!matchingStash) {
+      console.log(
+        "Could not find the stash. It may have been manually removed."
+      );
+      // Mark the stash as inactive in our config
+      config.stashes[repoName][stashId].active = false;
+      saveConfig();
       return;
     }
 
-    // Apply the most recent stash
+    // Apply the stash
     try {
-      await git.stash(["apply", gSwitchStashes[0].hash]);
+      await git.stash(["apply", matchingStash.hash]);
       console.log("Restored stashed changes to the current branch.");
+
+      // Mark the stash as inactive in our config
+      config.stashes[repoName][stashId].active = false;
+      saveConfig();
     } catch (stashError) {
       console.error("Failed to apply stashed changes:", stashError.message);
     }
@@ -261,9 +312,32 @@ async function main() {
       // First, add the files we want to stash to staging
       await git.add(filesToStash);
 
-      // Stash the selected files
-      await git.stash(["save", "gswitch: stashed changes"]);
+      // Generate a UUID for this context switch
+      const contextId = uuidv4();
+
+      // Get current timestamp
+      const timestamp = new Date().toISOString();
+
+      // Get repository info
+      const repoPath = await git.revparse(["--show-toplevel"]);
+      const repoName = path.basename(repoPath);
+
+      // Get current branch
+      const currentBranch = status.current;
+
+      // Stash the selected files with the UUID as reference
+      await git.stash(["save", `gswitch-${contextId}`]);
       console.log("Stashed changes for the selected files.");
+
+      // Save context information to our config
+      config.stashes[repoName] = config.stashes[repoName] || {};
+      config.stashes[repoName][contextId] = {
+        timestamp,
+        branch: currentBranch,
+        files: filesToStash,
+        active: true,
+      };
+      saveConfig();
 
       // Reset any other files that might have been staged but not selected for stashing
       const filesToKeep = modifiedFiles.filter(
