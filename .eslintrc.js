@@ -10,6 +10,7 @@ module.exports = {
     ecmaVersion: 'latest',
   },
   rules: {
+    indent: ['error', 2],
     'no-console': 'off', // Allow console for CLI applications
     'consistent-return': 'off', // Allow functions without explicit returns
     'no-param-reassign': 'off', // Allow parameter reassignment
