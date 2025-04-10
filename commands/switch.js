@@ -1,4 +1,3 @@
-const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 const inquirer = require('inquirer');
@@ -162,7 +161,7 @@ async function handleSwitchCommand() {
     // Now handle branch switching
     await handleSwitchCommand();
   } catch (error) {
-    console.error('An error occurred:', error.message);
+    console.error('An error occurred:', error);
     process.exit(1);
   }
 }
