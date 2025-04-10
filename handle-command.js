@@ -46,11 +46,7 @@ async function handleQuickSwitch() {
 
   // If no arguments provided or only the program name, run the main function
   if (process.argv.length <= 2) {
-    if (process.argv.includes('qs')) {
-      handleSwitchCommand();
-    } else if (process.argv.includes('ds')) {
-      handleRestoreCommand();
-    }
+    handleSwitchCommand();
   }
 }
 
