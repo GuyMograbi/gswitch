@@ -13,8 +13,7 @@ async function initializeConnection() {
     process.exit(1);
   }
   const repoPath = await git.revparse(['--show-toplevel']);
-  const repoName = path.basename(repoPath);
-  initialize(repoName);
+  initialize(repoPath);
 }
 
 module.exports = {

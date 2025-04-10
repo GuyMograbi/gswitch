@@ -1,5 +1,4 @@
-const path = require('path');
-const git = require('simple-git');
+const git = require('simple-git')();
 const gitAdapter = require('../git-adapter');
 const { SwitchContext } = require('../store');
 

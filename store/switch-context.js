@@ -12,6 +12,12 @@ class SwitchContext {
     getConnection().insert(propertyKey, item);
   }
 
+  static delete(filter) {
+    const all = this.getAll();
+    const filtered = all.filter(filter);
+    getConnection().write(propertyKey, filtered);
+  }
+
   static findForBranch(branchName) {
     const all = this.getAll();
     return all.filter((context) => context.branch === branchName);
