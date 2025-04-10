@@ -159,7 +159,7 @@ async function handleSwitchCommand() {
     }
 
     // Now handle branch switching
-    await handleSwitchCommand();
+    await promptBranchAction();
   } catch (error) {
     console.error('An error occurred:', error);
     process.exit(1);
