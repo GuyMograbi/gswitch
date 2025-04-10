@@ -21,7 +21,8 @@
   "license": "MIT",
   "dependencies": {
     "commander": "^13.1.0",
-    "inquirer": "^8.2.4",
+    "inquirer": "^8.2.6",
+    "inquirer-autocomplete-prompt": "^2.0.0",
     "simple-git": "^3.27.0",
     "uuid": "^11.1.0"
   },
