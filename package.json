@@ -1,10 +1,11 @@
 {
-  "name": "gswitch",
+  "name": "quick-switch",
   "version": "1.0.0",
   "description": "Helps context switching with git",
   "main": "index.js",
   "bin": {
-    "gswitch": "./index.js"
+    "qs": "./quick-switch.js",
+    "ds": "./de-switch.js"
   },
   "scripts": {
     "test": "mocha test/**/*.test.js",

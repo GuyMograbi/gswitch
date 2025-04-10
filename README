@@ -1,14 +1,57 @@
-> gswitch
+> quick-switch
 
-Helps context switching with git
+A CLI tool to help with context switching in Git
 
-> Examples
+## Installation
 
+```bash
+npm install -g quick-switch
 ```
-gswitch
+
+## Usage
+
+```bash
+qs
 ```
 
-* You will be prompted to select which files to keep.
-* You will be prompted to create a new branch or go to existing one
-* If new branch, you will be prompted to name it
-* If existing branch, you will be prompted to select one
+## Commands
+
+```bash
+qs help
+```
+
+```bash
+qs restore
+
+# or
+
+ds
+```
+
+```bash
+qs list
+```
+
+## Workflow Example
+
+```bash
+# Start on branch 'feature-a'
+# Make some changes
+
+# Run qs, stash some files, and switch to branch 'feature-b'
+qs
+
+# Work on branch 'feature-b'
+# Make some changes
+
+# When you want to restore your stashed changes, run 'qs restore'
+qs restore
+
+# or
+
+ds
+```
+
+## License
+
+MIT

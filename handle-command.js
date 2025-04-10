@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const { program } = require('commander');
 const {
   handleRestoreCommand,
@@ -9,8 +7,7 @@ const {
 } = require('./commands');
 const { initializeConnection } = require('./store');
 
-async function main() {
-  await initializeConnection();
+async function handleQuickSwitch() {
   program
     .version('1.0.0')
     .description('A CLI tool to help with context switching in Git')
@@ -49,11 +46,23 @@ async function main() {
 
   // If no arguments provided or only the program name, run the main function
   if (process.argv.length <= 2) {
-    handleSwitchCommand();
+    if (process.argv.includes('qs')) {
+      handleSwitchCommand();
+    } else if (process.argv.includes('ds')) {
+      handleRestoreCommand();
+    }
   }
 }
 
-// Only parse arguments when run directly (not when required in tests)
-if (require.main === module) {
-  main();
+async function handleCommand(baseCommand) {
+  await initializeConnection();
+  if (baseCommand === 'qs') {
+    handleQuickSwitch();
+  } else if (baseCommand === 'ds') {
+    handleRestoreCommand();
+  }
 }
+
+module.exports = {
+  handleCommand,
+};
