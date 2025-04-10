@@ -1,0 +1,14 @@
+> gswitch
+
+Helps context switching with git
+
+> Examples
+
+```
+gswitch
+```
+
+* You will be prompted to select which files to keep.
+* You will be prompted to create a new branch or go to existing one
+* If new branch, you will be prompted to name it
+* If existing branch, you will be prompted to select one
