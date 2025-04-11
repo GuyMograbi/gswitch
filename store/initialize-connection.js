@@ -13,6 +13,13 @@ async function initializeConnection() {
     process.exit(1);
   }
   const repoPath = await git.revparse(['--show-toplevel']);
+  if (!repoPath) {
+    console.error(
+      'Not a git repository. Please run this command in a git repository.',
+    );
+    process.exit(1);
+  }
+  console.log(`Initializing connection for [${repoPath}]`);
   initialize(repoPath);
 }
 

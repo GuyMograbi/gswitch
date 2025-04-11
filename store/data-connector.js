@@ -34,7 +34,7 @@ class DataConnection {
     if (!fs.existsSync(configDir)) {
       fs.mkdirSync(configDir, { recursive: true });
     }
-    fs.writeFileSync(configFile, JSON.stringify(data, null, 2), 'utf8');
+    fs.writeFileSync(configFile, JSON.stringify(config, null, 2), 'utf8');
   }
 
   insert(propertyKey, data) {
