@@ -1,0 +1,8 @@
+{
+  "spec": "**/__tests__/**/*.test.js",
+  "recursive": true,
+  "reporter": "spec",
+  "timeout": 5000,
+  "color": true,
+  "ignore": ["node_modules/**"]
+}

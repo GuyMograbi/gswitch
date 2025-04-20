@@ -2,19 +2,32 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 
-const configDir = path.join(os.homedir(), '.gswitch');
-const configFile = path.join(configDir, 'data.json');
-
 class DataConnection {
   constructor(repoName) {
     this.repoName = repoName;
   }
 
+  static get configDir() {
+    return this._configDir || path.join(os.homedir(), '.gswitch');
+  }
+
+  static set configDir(value) {
+    this._configDir = value;
+  }
+
+  static get configFile() {
+    return this._configFile || path.join(this.configDir, 'data.json');
+  }
+
+  static set configFile(value) {
+    this._configFile = value;
+  }
+
   static readRaw() {
-    if (!fs.existsSync(configFile)) {
+    if (!fs.existsSync(this.configFile)) {
       return null;
     }
-    return JSON.parse(fs.readFileSync(configFile, 'utf8'));
+    return JSON.parse(fs.readFileSync(this.configFile, 'utf8'));
   }
 
   read(propertyKey) {
@@ -27,16 +40,24 @@ class DataConnection {
   }
 
   write(propertyKey, data) {
-    const config = this.read() ?? {};
+    // Read the entire config file first
+    const config = DataConnection.readRaw() || {};
+
+    // Initialize the repository object if it doesn't exist
     if (!config[this.repoName]) {
       config[this.repoName] = {};
     }
+
+    // Update only the specific property for this repository
     config[this.repoName][propertyKey] = data;
+
     // Ensure config directory exists
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
+    if (!fs.existsSync(DataConnection.configDir)) {
+      fs.mkdirSync(DataConnection.configDir, { recursive: true });
     }
-    fs.writeFileSync(configFile, JSON.stringify(config, null, 2), 'utf8');
+
+    // Write the entire updated config back to the file
+    fs.writeFileSync(DataConnection.configFile, JSON.stringify(config, null, 2), 'utf8');
   }
 
   insert(propertyKey, data) {
