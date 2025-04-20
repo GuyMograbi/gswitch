@@ -1,10 +1,7 @@
 const { SwitchContext } = require('../store');
+const { initialize } = require('../store/data-connector');
 
-// Function to handle the list command
-async function handleListCommand() {
-  console.log('\nSaved contexts:');
-  console.log('----------------');
-
+function listRepository() {
   const repoContexts = SwitchContext.getAll();
 
   if (repoContexts.length === 0) {
@@ -33,6 +30,23 @@ async function handleListCommand() {
       console.log(`  - ${file}`);
     });
   });
+}
+
+// Function to handle the list command
+async function handleListCommand(all) {
+  console.log('\nSaved contexts:');
+  console.log('----------------');
+  if (all) {
+    const allRepositories = SwitchContext.getAllRepositories();
+    allRepositories.forEach(async (repo) => {
+      console.log(`\nRepository: ${repo}`);
+      await initialize(repo);
+      listRepository();
+    });
+  } else {
+
+    listRepository();
+  }
 }
 
 module.exports = {

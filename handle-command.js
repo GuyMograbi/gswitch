@@ -30,7 +30,8 @@ async function handleQuickSwitch() {
   program
     .command('restore')
     .description('Restore stashed changes to the current branch')
-    .action(() => {
+    .action(async () => {
+      await initializeConnection();
       handleRestoreCommand();
     });
 
@@ -38,23 +39,25 @@ async function handleQuickSwitch() {
   program
     .command('list')
     .description('List all stashed changes created by gswitch')
-    .action(() => {
-      handleListCommand();
+    .option('-a, --all', 'Show all details for each context')
+    .action((options) => {
+      handleListCommand(options.all);
     });
 
   program.parse(process.argv);
 
   // If no arguments provided or only the program name, run the main function
   if (process.argv.length <= 2) {
+    await initializeConnection();
     handleSwitchCommand();
   }
 }
 
 async function handleCommand(baseCommand) {
-  await initializeConnection();
   if (baseCommand === 'qs') {
     handleQuickSwitch();
   } else if (baseCommand === 'ds') {
+    await initializeConnection();
     handleRestoreCommand();
   }
 }

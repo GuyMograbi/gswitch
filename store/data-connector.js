@@ -10,13 +10,15 @@ class DataConnection {
     this.repoName = repoName;
   }
 
-  read(propertyKey) {
-    // Configuration file path
+  static readRaw() {
     if (!fs.existsSync(configFile)) {
       return null;
     }
+    return JSON.parse(fs.readFileSync(configFile, 'utf8'));
+  }
 
-    const config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+  read(propertyKey) {
+    const config = DataConnection.readRaw();
     if (config && config[this.repoName] && config[this.repoName][propertyKey]) {
       return config[this.repoName][propertyKey];
     }
@@ -53,7 +55,17 @@ function getConnection() {
   return instance;
 }
 
+function getAllRepositories() {
+  const config = DataConnection.readRaw();
+  if (!config) {
+    return [];
+  }
+  return Object.keys(config);
+}
+
 module.exports = {
   initialize,
   getConnection,
+  getAllRepositories,
+  DataConnection,
 };

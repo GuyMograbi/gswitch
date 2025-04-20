@@ -1,8 +1,12 @@
-const { getConnection } = require('./data-connector');
+const { getConnection, getAllRepositories } = require('./data-connector');
 
 const propertyKey = 'switch_context';
 
 class SwitchContext {
+  static getAllRepositories() {
+    return getAllRepositories();
+  }
+
   static getAll() {
     const data = getConnection().read(propertyKey);
     return data ?? [];
