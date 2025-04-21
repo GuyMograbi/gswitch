@@ -1,4 +1,4 @@
-const { SwitchContext } = require('../store');
+const { SwitchContext, initializeConnection } = require('../store');
 const { initialize } = require('../store/data-connector');
 
 function listRepository() {
@@ -38,13 +38,13 @@ async function handleListCommand(all) {
   console.log('----------------');
   if (all) {
     const allRepositories = SwitchContext.getAllRepositories();
-    allRepositories.forEach(async (repo) => {
+    allRepositories.forEach((repo) => {
       console.log(`\nRepository: ${repo}`);
-      await initialize(repo);
+      initialize(repo);
       listRepository();
     });
   } else {
-
+    await initializeConnection();
     listRepository();
   }
 }
