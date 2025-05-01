@@ -21,7 +21,7 @@ function listRepository() {
       formattedTime = timestamp;
     }
 
-    console.log(`\nContext ID: ${contextId.substring(0, 8)}...`);
+    console.log(`\nContext ID: ${contextId}`);
     console.log(`Created: ${formattedTime}`);
     console.log(`Branch: ${branch}`);
 
