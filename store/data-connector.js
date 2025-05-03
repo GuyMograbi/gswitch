@@ -1,6 +1,7 @@
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const lodash = require('lodash');
 
 class DataConnection {
   constructor(repoName) {
@@ -84,9 +85,19 @@ function getAllRepositories() {
   return Object.keys(config);
 }
 
+function getAllContexts() {
+  const config = DataConnection.readRaw();
+  if (!config) {
+    return [];
+  }
+  // clone
+  return lodash.cloneDeep(config);
+}
+
 module.exports = {
   initialize,
   getConnection,
   getAllRepositories,
+  getAllContexts,
   DataConnection,
 };

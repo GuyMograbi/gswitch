@@ -20,8 +20,11 @@ module.exports = {
     'no-unused-vars': ['error', { varsIgnorePattern: 'fs|path' }],
     'no-unused-expressions': 'off',
     'quote-props': ['error', 'as-needed'],
-    quotes: ['error', 'single'],
+    quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
     'implicit-arrow-linebreak': 'off',
     'no-confusing-arrow': 'off',
+    'no-restricted-syntax': 'off',
+    'no-continue': 'off',
+    'no-underscore-dangle': 'off',
   },
 };

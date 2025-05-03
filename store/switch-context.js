@@ -1,10 +1,14 @@
-const { getConnection, getAllRepositories } = require('./data-connector');
+const { getConnection, getAllRepositories, getAllContexts } = require('./data-connector');
 
 const propertyKey = 'switch_context';
 
 class SwitchContext {
   static getAllRepositories() {
     return getAllRepositories();
+  }
+
+  static getAllContexts() {
+    return getAllContexts();
   }
 
   static getAll() {

@@ -101,7 +101,7 @@ async function switchToExistingBranch() {
   }
 }
 
-async function handleSwitchCommand() {
+async function handleSwitchCommand(selectedBranch = undefined) {
   try {
     // Check if we're in a git repository
     const isRepo = await git.checkIsRepo();
@@ -171,6 +171,11 @@ async function handleSwitchCommand() {
     }
 
     // Now handle branch switching
+    if (selectedBranch) {
+      await git.checkout(selectedBranch);
+      console.log(`Switched to branch: ${selectedBranch}`);
+      return;
+    }
     await promptBranchAction();
   } catch (error) {
     console.error('An error occurred:', error);

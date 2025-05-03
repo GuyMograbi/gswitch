@@ -2,8 +2,10 @@ const { program } = require('commander');
 const {
   handleRestoreCommand,
   handleListCommand,
+  handleFetchCommand,
   handleSwitchCommand,
   handleHelpCommand,
+  handleGoCommand,
 } = require('./commands');
 const { initializeConnection } = require('./store');
 
@@ -26,6 +28,13 @@ async function handleQuickSwitch() {
       handleHelpCommand();
     });
 
+  program
+    .command('go')
+    .description('Go to a different branch')
+    .action(() => {
+      handleGoCommand();
+    });
+
   // Add restore command
   program
     .command('restore')
@@ -42,6 +51,14 @@ async function handleQuickSwitch() {
     .option('-a, --all', 'Show all details for each context')
     .action((options) => {
       handleListCommand(options.all);
+    });
+
+  // Add fetch command
+  program
+    .command('fetch')
+    .description('Fetch stashed changes from another clone')
+    .action(() => {
+      handleFetchCommand();
     });
 
   program.parse(process.argv);
